@@ -8,9 +8,7 @@ import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
-import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -25,7 +23,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.bluetoothle.adapters.DeviceAdapter
 import com.example.bluetoothle.model.Device
-import kotlinx.coroutines.coroutineScope
 
 
 class MainActivity : AppCompatActivity() {
@@ -120,6 +117,7 @@ class MainActivity : AppCompatActivity() {
                 scanning = false
                 Log.d(TAG, "Stop scanning 1")
                 scanner?.stopScan(leScanCallback)
+                deviceAdapater.cleanDeviceList()
             }, SCAN_PERIOD)
             scanning = true
             scanner?.startScan(leScanCallback)
@@ -127,10 +125,13 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "Stop scanning 2")
             scanning = false
             scanner?.stopScan(leScanCallback)
+            deviceAdapater.cleanDeviceList()
         }
     }
 
+
     private val leScanCallback = object : ScanCallback() {
+
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
             Log.d(TAG, "leScanCallback")
             super.onScanResult(callbackType, result)
@@ -156,12 +157,15 @@ class MainActivity : AppCompatActivity() {
 
                 newDevice.deviceName = device.name ?: "Unknown"
                 newDevice.deviceDescription = device.address
-                newDevice.deviceDetails = device.type.toString()
+                newDevice.deviceDetails = device.type.toString() + device.alias
                 deviceAdapater.addDevice(newDevice)
                 deviceAdapater.notifyDataSetChanged()
+
                 //device.connectGatt(this@MainActivity, false, gattCallback)
             }
         }
+
+
     }
 
     private val gattCallback = object : BluetoothGattCallback() {
@@ -275,4 +279,5 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this@MainActivity, "Permission Denied", Toast.LENGTH_SHORT).show()
         }
     }
+
 }
